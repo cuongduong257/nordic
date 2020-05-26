@@ -6,25 +6,27 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
 // Ward : Define ward
 type Ward struct {
-	ID   string
-	Name string
+	ID   string `yaml:"id,omitempty"`
+	Name string `yaml:"name"`
 }
 
 // District : Define Districts
 type District struct {
-	ID    string
-	Name  string
+	ID    string `yaml:"id,omitempty"`
+	Name  string `yaml:"name"`
 	Wards []Ward
 }
 
 // City : Define City
 type City struct {
-	ID        string
-	Name      string
+	ID        string `yaml:"id,omitempty"`
+	Name      string `yaml:"name"`
 	Districts []District
 }
 
@@ -55,7 +57,7 @@ func main() {
 		}
 		check(err)
 
-		city := &City{
+		city := City{
 			ID:   record[1],
 			Name: record[0],
 			Districts: []District{
@@ -71,18 +73,12 @@ func main() {
 				},
 			},
 		}
-		if citys.record[1] == record[0] {
-			fmt.Printf('ddd')
-		}
-		citys = citys.append(city)
-
-		
-		fmt.Print(city)
-		s := fmt.Sprintf("- id: %s\n  name: %s\n  districts:\n", record[1], record[0])
-
-		_, wErr := w.WriteString(s)
-		check(wErr)
+		citys = append(citys, city)
 	}
+
+	marshal, error := yaml.Marshal(citys)
+	check(error)
+	w.WriteString(string(marshal))
 
 	w.Flush()
 	fmt.Printf("Write done...")
