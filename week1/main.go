@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	"io"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -36,6 +35,57 @@ func check(e error) {
 	}
 }
 
+func convertCsvToYaml(records [][]string) (yamlText []*City, error error) {
+	data := []*City{}
+	cityMap := make(map[interface{}]*City)
+	districtMap := make(map[interface{}]*District)
+
+	for i, record := range records {
+		// Though to second record
+		if i == 0 {
+			continue
+		}
+		// Though error record
+		if len(record) < 6 {
+			continue
+		}
+		cityName := record[0]
+		cityCode := record[1]
+		districtName := record[2]
+		districtCode := record[3]
+		wardName := record[4]
+		wardCode := record[5]
+
+		city, ok := cityMap[cityCode]
+		if !ok {
+			city = &City{
+				ID:   string(cityCode),
+				Name: string(cityName),
+			}
+			cityMap[cityCode] = city
+			data = append(data, city)
+		}
+
+		district, ok := districtMap[districtCode]
+		if !ok {
+			district = &District{
+				ID:   string(districtCode),
+				Name: string(districtName),
+			}
+			districtMap[districtCode] = district
+			city.Districts = append(city.Districts, district)
+		}
+
+		ward := &Ward{
+			ID:   string(wardCode),
+			Name: string(wardName),
+		}
+		district.Wards = append(district.Wards, ward)
+	}
+
+	return data, nil
+}
+
 func main() {
 	fmt.Println("Start...")
 	input, err := os.Open("data.csv")
@@ -49,52 +99,16 @@ func main() {
 	r := csv.NewReader(input)
 	w := bufio.NewWriter(output)
 
-	data := []*City{}
-	cityMap := make(map[interface{}]*City)
-	districtMap := make(map[interface{}]*District)
+	records, err := r.ReadAll()
+	check(err)
 
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		check(err)
+	yamlText, err := convertCsvToYaml(records)
+	check(err)
 
-		if record[0] == "Tỉnh Thành Phố" {
-			continue
-		}
+	marshal, err := yaml.Marshal(yamlText)
+	check(err)
 
-		city, ok := cityMap[record[1]]
-		if !ok {
-			city = &City{
-				ID:   record[1],
-				Name: record[0],
-			}
-			cityMap[record[1]] = city
-			data = append(data, city)
-		}
-
-		district, ok := districtMap[record[3]]
-		if !ok {
-			district = &District{
-				ID:   record[3],
-				Name: record[2],
-			}
-			districtMap[record[3]] = district
-			city.Districts = append(city.Districts, district)
-		}
-
-		ward := &Ward{
-			ID:   record[5],
-			Name: record[4],
-		}
-		district.Wards = append(district.Wards, ward)
-	}
-
-	marshal, error := yaml.Marshal(data)
-	check(error)
 	w.WriteString(string(marshal))
-
 	w.Flush()
 	fmt.Printf("Done...\n")
 }
