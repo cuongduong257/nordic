@@ -21,7 +21,7 @@ type City struct {
 }
 
 // ConvertCsvToYaml : conver csv data to yaml text
-func ConvertCsvToYaml(records [][]string) (yamlText []*City) {
+func ConvertCsvToYaml(records [][]string) (yamlText []City) {
 	data := []*City{}
 	cityMap := make(map[interface{}]*City)
 	districtMap := make(map[interface{}]*District)
@@ -70,7 +70,11 @@ func ConvertCsvToYaml(records [][]string) (yamlText []*City) {
 		district.Wards = append(district.Wards, ward)
 	}
 
-	return data
+	cities := []City{}
+	for _, c := range data {
+		cities = append(cities, *c)
+	}
+	return cities
 }
 
 

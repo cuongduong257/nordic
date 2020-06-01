@@ -12,7 +12,7 @@ func TestConvertCsvToYaml(t *testing.T) {
 	tests := []struct {
 		name         string
 		args         args
-		wantYamlText []*City
+		wantYamlText []City
 	}{
 		{
 			name: "Test nil records string",
@@ -20,7 +20,7 @@ func TestConvertCsvToYaml(t *testing.T) {
 				{"Thành phố Hà Nội", "01", "Quận Ba Đình", "001", "Phường Kim Mã", "00028", "Phường,"},
 				{"Thành phố Hà Nội", "01", "Quận Ba Đình", "001", "Phường Giảng Võ", "00031", "Phường,"},
 			}},
-			wantYamlText: []*City{
+			wantYamlText: []City{
 				{
 					ID: "01",
 					Name: "Thành phố Hà Nội",
